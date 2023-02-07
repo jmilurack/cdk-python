@@ -37,6 +37,20 @@
     "@aws-cdk/aws-iam:importedRoleStackSafeDefaultPolicyName": true,
     "@aws-cdk/aws-s3:serverAccessLogsUseBucketPolicy": true,
     "@aws-cdk/aws-route53-patters:useCertificate": true,
-    "@aws-cdk/customresources:installLatestAwsSdkDefault": false
+    "@aws-cdk/customresources:installLatestAwsSdkDefault": false,
+
+    "dev": {
+      "account": "817409382164",
+      "region": "us-east-1",
+      "vpcId": "vpc-a277acdb", 
+      "subnetsCIDRs": ["172.31.64.0/20", "172.31.32.0/20"],
+      "eventBus": "arn:aws:events:us-east-1:817409382164:event-bus/default"
+    },
+    "qa": {
+
+    },
+    "prod": {
+
+    }
   }
 }

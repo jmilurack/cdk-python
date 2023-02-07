@@ -2,27 +2,31 @@
 import os
 
 import aws_cdk as cdk
+import src.common as cmn
 
-from cdk_python.cdk_python_stack import CdkPythonStack
+from cdk_python.common_stack import CommonStack
+from cdk_python.step_functions_stack import StepFunctionsStack
 
-
+cdkStack = []
 app = cdk.App()
-CdkPythonStack(app, "CdkPythonStack",
-    # If you don't specify 'env', this stack will be environment-agnostic.
-    # Account/Region-dependent features and context lookups will not work,
-    # but a single synthesized template can be deployed anywhere.
 
-    # Uncomment the next line to specialize this stack for the AWS Account
-    # and Region that are implied by the current CLI configuration.
+DEFAULT_ENVIRON = "dev"
+_env = app.node.try_get_context("env")
+env = DEFAULT_ENVIRON if _env == None else _env
 
-    #env=cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION')),
+awsEnv = cdk.Environment(account=cmn.get_context_param(env, "account"),
+                         region=cmn.get_context_param(env, "region"))
 
-    # Uncomment the next line if you know exactly what Account and Region you
-    # want to deploy the stack to. */
+commonStack = CommonStack(app, "CommonStack", env=awsEnv, environ=env)
+stepFunctionsStack = StepFunctionsStack(app, "StepFunctionsStack", env=awsEnv, 
+                                        commonStack=commonStack, environ=env)
 
-    #env=cdk.Environment(account='123456789012', region='us-east-1'),
+cdkStack.append(commonStack)
+cdkStack.append(stepFunctionsStack)
 
-    # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
-    )
-
+for stack in cdkStack:
+    cdk.Tags.of(stack).add("Application", "app_name", priority=300 )
+    cdk.Tags.of(stack).add("CreatedBy", "CDK", priority=300 )
+    cdk.Tags.of(stack).add("Stage", env, priority=300 )
+    cdk.Tags.of(stack).add("Owner", "CompanyName", priority=300 )
 app.synth()
