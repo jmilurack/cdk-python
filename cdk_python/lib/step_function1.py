@@ -9,8 +9,7 @@ from aws_cdk import (
     CfnOutput as _cfn_output,
     Stack,
     aws_s3_assets as _s3_assets,
-    aws_iam as _iam,
-    
+    aws_iam as _iam
     
 )
 from constructs import Construct
@@ -22,7 +21,13 @@ STATE_MACHINE_DURATION_MINS = 60
 LOG_RETENTION_PERIOD = logs.RetentionDays.ONE_MONTH
 
 
+
 class StepFunction1(Construct): 
+    '''
+    Construct that defines the step function. This example step function
+    has 2 steps - a lambda function and a Glue job. There will be a similar
+    construct for each step function.
+    '''
 
     def __init__(self, scope: Construct, construct_id: str,  
                  commonStack: Stack, environ: str, **kwargs) -> None:
@@ -57,6 +62,7 @@ class StepFunction1(Construct):
         lambdaFn = _lambda.Function(self, "lambda-1", 
                                 runtime=_lambda.Runtime.PYTHON_3_9,
                                 handler="lambda1.handler",
+                                vpc=commonStack.vpc,
                                 code=_lambda.Code.from_asset("src/lambdas"))
         
         _cfn_output(self, "Lambda_1Name", value=lambdaFn.function_arn,
@@ -82,7 +88,8 @@ class StepFunction1(Construct):
 
        job_name =  f"glue_job-1-asset-{environ}"
        
-
+       _glue.CfnConnection.PhysicalConnectionRequirementsProperty()
+       
        _glue.CfnJob(self, f"glue_job_1_asset",
                                 name=job_name,
                                 description="Copy glue job script to scripts folder",
@@ -107,16 +114,23 @@ class StepFunction1(Construct):
                                     "--spark-event-logs-path": f"s3://{self.job_1_asset.s3_bucket_name}/output/logs",
                                     "--enable-continuous-cloudwatch-log": "true",
                                     "--enable-metrics": "",
-                                    "--param1": "default_value",
-                                    "--param2": "default_value",
-                                    "--param3": "default_value",
-                                    "--param4": "default_value",
-                                }
-                            )
+                                    "--enable-spark-ui": True,
+                                    "--disable-proxy-v2": True
+                                },
+                                connections= \
+                                  _glue.CfnJob.ConnectionsListProperty(
+                                      connections=[commonStack.glue_network_connection.connection_input.name])
+       )
         
        glueJobTask = tasks.GlueStartJobRun(self, "glue_job_1", 
                                         glue_job_name=job_name,
                                         input_path="$.params",
                                         integration_pattern=sfn.IntegrationPattern.RUN_JOB,
+                                        arguments=sfn.TaskInput.from_object({
+                                            "--param1": sfn.JsonPath.string_at("$.param1"),
+                                            "--param2": sfn.JsonPath.string_at("$.param2"),
+                                            "--param3": sfn.JsonPath.string_at("$.param3"),
+                                            "--param4": sfn.JsonPath.string_at("$.param4")
+                                        })
                                         )           
        return glueJobTask

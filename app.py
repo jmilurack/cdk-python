@@ -17,7 +17,13 @@ env = DEFAULT_ENVIRON if _env == None else _env
 awsEnv = cdk.Environment(account=cmn.get_context_param(env, "account"),
                          region=cmn.get_context_param(env, "region"))
 
-commonStack = CommonStack(app, "CommonStack", env=awsEnv, environ=env)
+commonStack = CommonStack(app, "CommonStack", env=awsEnv, environ=env,
+                          vpc_id=cmn.get_context_param(env, "vpcId"),
+                          glue_security_groups=cmn.get_context_param(env, "glueSecurityGroups"))
+
+
+
+
 stepFunctionsStack = StepFunctionsStack(app, "StepFunctionsStack", env=awsEnv, 
                                         commonStack=commonStack, environ=env)
 
