@@ -42,8 +42,8 @@
     "dev": {
       "account": "817409382164",
       "region": "us-east-1",
-      "vpcId": "vpc-a277acdb", 
-      "subnetsCIDRs": ["172.31.64.0/20", "172.31.32.0/20"],
+      "vpcId": "vpc-038189879b314a673", 
+      "glueSecurityGroups": ["sg-0e25604157f580f62", "sg-0d0a26928961bffaa", "sg-0e66bc52113add52e"],
       "eventBus": "arn:aws:events:us-east-1:817409382164:event-bus/default"
     },
     "qa": {

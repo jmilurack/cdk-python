@@ -9,6 +9,10 @@ from constructs import Construct
 from cdk_python.lib.step_function1 import StepFunction1
 
 class StepFunctionsStack(Stack):
+    '''
+    Creates the application. In this case the application consists of 
+    a single step function, but there could be more
+    '''
 
     def __init__(self, scope: Construct, construct_id: str,
                  commonStack: Stack, environ: str, **kwargs) -> None:
